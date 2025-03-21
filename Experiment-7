@@ -1,0 +1,107 @@
+##Easy
+Minimum operation to make the array increasing
+class Solution {
+    public int minOperations(int[] nums) {
+        int operations = 0;
+        
+        for (int i = 1; i < nums.length; i++) {
+            if (nums[i] <= nums[i - 1]) {
+                int increment = nums[i - 1] - nums[i] + 1; // Minimum increment needed
+                nums[i] += increment;
+                operations += increment;
+            }
+        }
+        
+        return operations;
+    }
+}
+
+##Medium
+Remove stonesto minimize the total
+import java.util.PriorityQueue;
+
+class Solution {
+    public int minStoneSum(int[] piles, int k) {
+        // Max heap to store the piles
+        PriorityQueue<Integer> maxHeap = new PriorityQueue<>((a, b) -> b - a);
+
+        // Insert all pile values into the max heap
+        int totalSum = 0;
+        for (int pile : piles) {
+            maxHeap.add(pile);
+            totalSum += pile;
+        }
+
+        // Perform k operations
+        while (k-- > 0) {
+            int maxPile = maxHeap.poll(); // Get the largest pile
+            int removeStones = maxPile / 2;
+            totalSum -= removeStones; // Reduce the total sum
+            maxHeap.add(maxPile - removeStones); // Insert updated pile back
+        }
+
+        return totalSum;
+    }
+}
+
+##Hard
+Maximum number of task you can assign
+class Solution {
+  public int maxTaskAssign(int[] tasks, int[] workers, int pills, int strength) {
+    int ans = 0;
+    int l = 0;
+    int r = Math.min(tasks.length, workers.length);
+
+    Arrays.sort(tasks);
+    Arrays.sort(workers);
+
+    while (l <= r) {
+      final int m = (l + r) / 2;
+      if (canComplete(tasks, workers, pills, strength, m)) {
+        ans = m;
+        l = m + 1;
+
+      } else {
+        r = m - 1;
+      }
+    }
+
+    return ans;
+  }
+
+  // Returns true if we can finish k tasks.
+  private boolean canComplete(int[] tasks, int[] workers, int pillsLeft, int strength, int k) {
+    // k strongest workers
+    TreeMap<Integer, Integer> sortedWorkers = new TreeMap<>();
+    for (int i = workers.length - k; i < workers.length; ++i)
+      sortedWorkers.merge(workers[i], 1, Integer::sum);
+
+    // Out of the k smallest tasks, start from the biggest one.
+    for (int i = k - 1; i >= 0; --i) {
+      // Find the first worker that has strength >= tasks[i].
+      Integer lo = sortedWorkers.ceilingKey(tasks[i]);
+      if (lo != null) {
+        sortedWorkers.merge(lo, -1, Integer::sum);
+        if (sortedWorkers.get(lo) == 0) {
+          sortedWorkers.remove(lo);
+        }
+      } else if (pillsLeft > 0) {
+        // Find the first worker that has strength >= tasks[i] - strength.
+        lo = sortedWorkers.ceilingKey(tasks[i] - strength);
+        if (lo != null) {
+          sortedWorkers.merge(lo, -1, Integer::sum);
+          if (sortedWorkers.get(lo) == 0) {
+            sortedWorkers.remove(lo);
+          }
+          --pillsLeft;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}
